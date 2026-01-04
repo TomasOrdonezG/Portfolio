@@ -81,7 +81,7 @@ def write_files(filepaths):
 
         with open(filepath, "r") as f:
             try:
-                doc_ref.set({"data": f.read()})
+                doc_ref.set({"data": f.read(), "name": os.path.basename(filepath)})
             except Exception as e:
                 print(f"Failed to write file '{filepath}' to database: ", e)
                 raise
