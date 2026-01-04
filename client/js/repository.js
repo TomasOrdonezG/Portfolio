@@ -9,6 +9,7 @@ const DIR_STRUCTURE_DOCUMENT = "root";
 class Repository {
     async getShader(shaderName) {
         const snap = await getDoc(doc(db, SHADERS_COLLECTION, shaderName));
+        // console.log("Hello world\n");
         if (!snap.exists()) {
             return null;
         }

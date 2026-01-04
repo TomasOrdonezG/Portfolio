@@ -2,12 +2,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebas
 import { getFirestore } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
 const firebaseConfig = {
-    apiKey: "XXXX",
-    authDomain: "app.firebaseapp.com",
-    projectId: "app",
-    storageBucket: "app.firebasestorage.app",
-    messagingSenderId: "XXX",
-    appId: "XXX"
+    apiKey: "AIzaSyDgdpOPBiJPlUD06zLAjDFLRquQqgsVC68",
+    authDomain: "tomasportfolio-106ad.firebaseapp.com",
+    projectId: "tomasportfolio-106ad",
+    storageBucket: "tomasportfolio-106ad.firebasestorage.app",
+    messagingSenderId: "325104305792",
+    appId: "1:325104305792:web:3033b2a0ef70a3aeff8865"
 };
 
 const app = initializeApp(firebaseConfig);

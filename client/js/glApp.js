@@ -112,17 +112,15 @@ class GlApp {
         throw new Error("onResize not implemented.");
     }
 
-    run(drawUI) {
+    run() {
         let start = performance.now();
         let lastTime = start;
         const frame = (t) => {
             const delta = (t - lastTime) * 0.001;
             const timeSec = (t - start) * 0.001;
             lastTime = t;
-            // console.log("FPS:", (1 / delta).toFixed(1));
 
             // Redraw every frame (for now)
-            // drawUI();
             this.render();
 
             // upload uiCanvas to texture
