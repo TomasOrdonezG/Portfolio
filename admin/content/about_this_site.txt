@@ -1,0 +1,10 @@
+Inspiration:
+- Colors and overall theme inspired by: https://github.com/Swordfish90/cool-retro-term.
+- File system navigation and layout inspired by Yazi file manager: https://github.com/sxyazi/yazi.
+
+Shader:
+- Old screen fragment shader: https://www.shadertoy.com/view/lsfXzM.
+- Grain texture for shader: https://www.shadertoy.com/media/a/f735bee5b64ef98879dc618b016ecf7939a5756040c2cde21ccb15e69a6e1cfb.png.
+
+Other:
+- ASCII art header of my name: https://patorjk.com/software/taag/#p=display&f=Small+Slant&t=Tomas+Ordonez+Gonzalez&x=none&v=4&h=4&w=80&we=false
