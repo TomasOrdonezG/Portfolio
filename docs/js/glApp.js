@@ -1,7 +1,5 @@
-const GRAIN_IMG = './assets/grain.png';
-
 class GlApp {
-    constructor(vertexShaderCode, fragShaderCode) {
+    constructor(vertexShaderCode, fragShaderCode, grainImgBlob) {
         // DPR
         this.DPR = Math.max(1, window.devicePixelRatio || 1);
 
@@ -57,8 +55,11 @@ class GlApp {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         const tmpData = new Uint8Array([0, 0, 0, 255]);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, tmpData);
+
+
+
         const grainImg = new Image();
-        grainImg.src = GRAIN_IMG;
+        grainImg.src = URL.createObjectURL(grainImgBlob);
         grainImg.onload = () => {
             gl.bindTexture(gl.TEXTURE_2D, this.texGrain);
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);

@@ -109,7 +109,7 @@ class Terminal {
         const contentWidth = this.cols - Math.floor(this.styles.currDirZonePer * this.cols) - 1;
         this.fileCache[fileID] = FileFactory.createLoadFile(contentWidth);
         this.fileCache[fileID].load();
-        const fileData = await repo.getFile(fileID);
+        const fileData = await repo.getFileData(fileID);
         await this.fileCache[fileID].doneLoading();
         this.fileCache[fileID] = FileFactory.create(fileData.name, fileData.data);
     }

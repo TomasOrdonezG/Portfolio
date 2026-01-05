@@ -2,9 +2,11 @@ import GlApp from "./glApp.js";
 import Terminal from "./terminal.js";
 import repo from "./repository.js";
 
+const GRAIN_IMG_PATH = "images/grain.png";
+
 class App extends GlApp {
-    constructor(vertexShaderCode, fragShaderCode, dirStructure) {
-        super(vertexShaderCode, fragShaderCode);
+    constructor(vertexShaderCode, fragShaderCode, grainImgBlob, dirStructure) {
+        super(vertexShaderCode, fragShaderCode, grainImgBlob);
         this.term = new Terminal(dirStructure, this.uiCtx);
         this.resize();
     }
@@ -13,7 +15,8 @@ class App extends GlApp {
         const vs = await repo.getShader("main.vert");
         const fs = await repo.getShader("tv.frag");
         const dirStructure = await repo.getDirStructure();
-        return new App(vs, fs, dirStructure);
+        const grainImgBlob = await repo.downloadFile(GRAIN_IMG_PATH);
+        return new App(vs, fs, grainImgBlob, dirStructure);
     }
 
     onResize(canvasW, canvasH) {
