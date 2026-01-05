@@ -1,3 +1,4 @@
+import FileFactory from "./file.js";
 import FileSystem from "./fileSystem.js";
 import repo from "./repository.js";
 import strings from "./strings.js";
@@ -18,7 +19,7 @@ class Terminal {
         this.setFont();
 
         this.lsIdx = 0;
-        this.fileContentCache = {};
+        this.fileCache = {};
 
         document.addEventListener("keydown", e => {
             if (e.code == "ArrowUp") {
@@ -38,6 +39,13 @@ class Terminal {
                 if (!this.fs.inRoot()) {
                     this.lsIdx = this.fs.cd(-1);
                 }
+            } else if (e.code == "Enter") {
+                if (this.fs.isFile(this.lsIdx)) {
+                    const fileID = this.fs.getFileID(this.lsIdx);
+                    if (fileID in this.fileCache) {
+                        this.fileCache[fileID].run();
+                    }
+                }
             }
         });
     }
@@ -50,8 +58,8 @@ class Terminal {
 
     setFont(size = this.styles.fontSize) {
         this.styles.fontSize = size;
-        // this.ctx.font = `900 ${this.styles.fontSize}px 'Doto'`;
-        this.ctx.font = `500 ${this.styles.fontSize}px monospace`;
+        this.ctx.font = `900 ${this.styles.fontSize}px 'Doto'`;
+        // this.ctx.font = `500 ${this.styles.fontSize}px monospace`;
 
         const metrics = this.ctx.measureText('M');
         this.charWidth = metrics.width;
@@ -96,10 +104,14 @@ class Terminal {
     }
 
     async requestFile(fileID) {
-        if (!(fileID in this.fileContentCache)) {
-            this.fileContentCache[fileID] = "Loading...";
-            this.fileContentCache[fileID] = await repo.getFile(fileID);
-        }
+        if (fileID in this.fileCache) return;
+
+        const contentWidth = this.cols - Math.floor(this.styles.currDirZonePer * this.cols) - 1;
+        this.fileCache[fileID] = FileFactory.createLoadFile(contentWidth);
+        this.fileCache[fileID].load();
+        const fileData = await repo.getFile(fileID);
+        await this.fileCache[fileID].doneLoading();
+        this.fileCache[fileID] = FileFactory.create(fileData.name, fileData.data);
     }
 
     getHeader() {
@@ -152,7 +164,7 @@ class Terminal {
         if (this.fs.isFile(this.lsIdx)) {
             const fileID = this.fs.getFileID(this.lsIdx);
             this.requestFile(fileID);
-            this.write(this.fileContentCache[fileID], row, sepCol + 1);
+            this.write(this.fileCache[fileID].text, row, sepCol + 1);
         }
     }
 }

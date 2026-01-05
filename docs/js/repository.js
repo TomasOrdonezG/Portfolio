@@ -30,8 +30,7 @@ class Repository {
         if (!snap.exists()) {
             return null;
         }
-        const data = snap.data();
-        return data.data;
+        return snap.data();
     }
 }
 
