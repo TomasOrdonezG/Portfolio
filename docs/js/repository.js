@@ -27,11 +27,16 @@ class Repository {
         return snap.data();
     }
 
-    async downloadFile(filepath) {
+    async getFileBlob(filepath) {
         const url = await getDownloadURL(ref(storage, filepath));
         const res = await fetch(url);
         if (!res.ok) return null;
         return await res.blob();
+    }
+
+    async openFile(filepath) {
+        const url = await getDownloadURL(ref(storage, filepath));
+        window.open(url, "_blank", "noopener");
     }
 }
 

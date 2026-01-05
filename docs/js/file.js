@@ -1,9 +1,11 @@
+import repo from "./repository.js";
+
 class File {
     constructor(text) {
         this.text = text;
     }
 
-    run() { }
+    async run() { }
 };
 
 class LoadFile extends File {
@@ -28,6 +30,25 @@ class LoadFile extends File {
     }
 };
 
+class JSONFile extends File {
+    constructor(data) {
+        super(data.text);
+        this.data = data;
+    }
+}
+
+class FileOpeningFile extends JSONFile {
+    async run() {
+        await repo.openFile(this.data.firebaseStoragePath);
+    }
+}
+
+class URLFile extends JSONFile {
+    async run() {
+        window.open(this.data.url, "_blank", "noopener");
+    }
+}
+
 class FileFactory {
     static create(name, data) {
         const parts = name.split(".");
@@ -37,6 +58,13 @@ class FileFactory {
         }
 
         data = JSON.parse(data);
+
+        if (parts[1] == "pdf") {
+            return new FileOpeningFile(data);
+        } else if (parts[1] == "url") {
+            return new URLFile(data);
+        }
+
         return new File(data.text);
     }
 

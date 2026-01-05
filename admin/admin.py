@@ -1,9 +1,12 @@
-import firebase_admin, os
+import os
+from pathlib import Path
 from firebase_admin import credentials, initialize_app, firestore, storage
 
-CONTENT_DIR = os.path.join(os.path.curdir, "content")
-SHADERS_DIR = os.path.join(os.path.curdir, "shaders")
-IMAGES_DIR = os.path.join(os.path.curdir, "images")
+STORAGE_DIR_NAME = "storage"
+
+CONTENT_PATH = os.path.join(os.path.curdir, "content")
+SHADERS_PATH = os.path.join(os.path.curdir, "shaders")
+STORAGE_PATH = os.path.join(os.path.curdir, STORAGE_DIR_NAME)
 
 SHADERS_COLLECTION = "shaders"
 FILES_COLLECTION = "files"
@@ -22,8 +25,8 @@ def write_shaders():
     """
     Write shader code to firestore database
     """
-    for shader_filename in os.listdir(SHADERS_DIR):
-        shader_filepath = os.path.join(SHADERS_DIR, shader_filename)
+    for shader_filename in os.listdir(SHADERS_PATH):
+        shader_filepath = os.path.join(SHADERS_PATH, shader_filename)
         with open(shader_filepath, "r") as shader_file:
             shader_data = { "code": shader_file.read() }
             doc_ref = db.collection(SHADERS_COLLECTION).document(shader_filename)
@@ -33,7 +36,7 @@ def filepath_to_id(filepath):
     """
     Maps a file path to that file's ID in the database.
     """
-    return filepath.replace(CONTENT_DIR, "").replace("/", "\\")
+    return filepath.replace(CONTENT_PATH, "").replace("/", "\\")
 
 def get_contents():
     """
@@ -61,7 +64,7 @@ def get_contents():
     # TODO: Sort subdirs and files
 
     dir_structure["name"] = ""
-    DFS(CONTENT_DIR, dir_structure)
+    DFS(CONTENT_PATH, dir_structure)
     return dir_structure, filepaths
 
 def write_dir_structure(dir_structure):
@@ -90,17 +93,24 @@ def write_files(filepaths):
                 print(f"Failed to write file '{filepath}' to database: ", e)
                 raise
 
-def upload_file(filepath):
-    clean_filepath = os.path.normpath(filepath)
-    bucket.blob()
-    blob = bucket.blob(clean_filepath)
-    blob.upload_from_filename(clean_filepath)
+def update_storage():
+    """
+    Uploads files to firebase storage
+    """
+
+    for f in Path(STORAGE_PATH).rglob("*"):
+        if not f.is_file():
+            continue
+ 
+        filepath = str(f)
+        blobName = filepath.replace(STORAGE_DIR_NAME + "/", "")
+    
+        blob = bucket.blob(blobName)
+        blob.upload_from_filename(filepath)
 
 if __name__ == "__main__":
-    # dir_structure, filepaths = get_contents()
-    # write_dir_structure(dir_structure)
-    # write_files(filepaths)
-    # write_shaders()
-
-    # ! TEST: Upload file
-    upload_file(os.path.join(IMAGES_DIR, "grain.png"))
+    dir_structure, filepaths = get_contents()
+    write_dir_structure(dir_structure)
+    write_files(filepaths)
+    write_shaders()
+    update_storage()

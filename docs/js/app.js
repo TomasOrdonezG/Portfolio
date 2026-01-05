@@ -15,7 +15,7 @@ class App extends GlApp {
         const vs = await repo.getShader("main.vert");
         const fs = await repo.getShader("tv.frag");
         const dirStructure = await repo.getDirStructure();
-        const grainImgBlob = await repo.downloadFile(GRAIN_IMG_PATH);
+        const grainImgBlob = await repo.getFileBlob(GRAIN_IMG_PATH);
         return new App(vs, fs, grainImgBlob, dirStructure);
     }
 
