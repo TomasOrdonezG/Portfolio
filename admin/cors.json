@@ -1,0 +1,16 @@
+[
+    {
+        "origin": [
+            "http://127.0.0.1:3000",
+            "http://localhost:3000",
+            "https://tomasordonezg.github.io/Portfolio/"
+        ],
+        "method": [
+            "GET"
+        ],
+        "responseHeader": [
+            "Content-Type"
+        ],
+        "maxAgeSeconds": 3600
+    }
+]

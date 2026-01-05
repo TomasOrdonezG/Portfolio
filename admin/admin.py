@@ -1,9 +1,9 @@
 import firebase_admin, os
-from firebase_admin import credentials
-from firebase_admin import firestore
+from firebase_admin import credentials, initialize_app, firestore, storage
 
 CONTENT_DIR = os.path.join(os.path.curdir, "content")
 SHADERS_DIR = os.path.join(os.path.curdir, "shaders")
+IMAGES_DIR = os.path.join(os.path.curdir, "images")
 
 SHADERS_COLLECTION = "shaders"
 FILES_COLLECTION = "files"
@@ -11,8 +11,12 @@ DIR_STRUCTURE_COLLECTION = "dir-structure"
 DIR_STRUCTURE_DOCUMENT = "root"
 
 cred = credentials.Certificate("./serviceAccountKey.json")
-firebase_admin.initialize_app(cred)
+initialize_app(cred, {
+    'storageBucket': 'tomasportfolio-106ad.firebasestorage.app'
+})
+
 db = firestore.client()
+bucket = storage.bucket()
 
 def write_shaders():
     """
@@ -86,8 +90,17 @@ def write_files(filepaths):
                 print(f"Failed to write file '{filepath}' to database: ", e)
                 raise
 
+def upload_file(filepath):
+    clean_filepath = os.path.normpath(filepath)
+    bucket.blob()
+    blob = bucket.blob(clean_filepath)
+    blob.upload_from_filename(clean_filepath)
+
 if __name__ == "__main__":
-    dir_structure, filepaths = get_contents()
-    write_dir_structure(dir_structure)
-    write_files(filepaths)
-    write_shaders()
+    # dir_structure, filepaths = get_contents()
+    # write_dir_structure(dir_structure)
+    # write_files(filepaths)
+    # write_shaders()
+
+    # ! TEST: Upload file
+    upload_file(os.path.join(IMAGES_DIR, "grain.png"))
