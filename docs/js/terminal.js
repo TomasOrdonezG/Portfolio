@@ -13,8 +13,8 @@ class Terminal {
             highlightColor: styles.highlightColor ?? '#59ffb7',
             fontSize: styles.fontSize ?? 28,
             lineVerticalMarginPer: styles.lineVerticalMarginPer ?? 0.3,
-            currDirZonePer: styles.currDirZonePer ?? 0.3,
-            horizontalMargin: styles.horizontalMargin ?? 2,
+            leftSectionWidthPer: styles.leftSectionWithPer ?? 0.3,
+            horizontalMargin: styles.horizontalMargin ?? 1,
         };
 
         this.font = font;
@@ -25,27 +25,43 @@ class Terminal {
         this.lineVerticalMargin = this.styles.lineVerticalMarginPer * this.lineHeight;
         this.lineHeight += this.lineVerticalMargin;
 
-
         this.lsIdx = 0;
         this.fileCache = {};
+        this.setFileFocused(false);
 
         document.addEventListener("keydown", e => {
             if (e.code == "ArrowUp") {
-                this.lsIdx = Math.max(this.lsIdx - 1, 0);
-            } else if (e.code == "ArrowDown") {
-                const ls = this.fs.ls();
-                if (ls.length == 0) {
-                    this.lsIdx = 0;
+                if (!this.fileFocused) {
+                    // Scroll file system
+                    this.lsIdx = Math.max(this.lsIdx - 1, 0);
                 } else {
-                    this.lsIdx = Math.min(this.lsIdx + 1, this.fs.ls().length - 1);
+                    // Scroll file
+                    // TODO
+                }
+            } else if (e.code == "ArrowDown") {
+                if (!this.fileFocused) {
+                    // Scroll file system
+                    const ls = this.fs.ls();
+                    if (ls.length == 0) {
+                        this.lsIdx = 0;
+                    } else {
+                        this.lsIdx = Math.min(this.lsIdx + 1, this.fs.ls().length - 1);
+                    }
+                } else {
+                    // Scroll file
+                    // TODO
                 }
             } else if (e.code == "ArrowRight") {
                 if (this.fs.isSubdir(this.lsIdx)) {
                     this.lsIdx = this.fs.cd(this.lsIdx);
+                } else {
+                    this.setFileFocused(true);
                 }
             } else if (e.code == "ArrowLeft") {
-                if (!this.fs.inRoot()) {
+                if (!this.fs.inRoot() && !this.fileFocused) {
                     this.lsIdx = this.fs.cd(-1);
+                } else if (this.fileFocused) {
+                    this.setFileFocused(false);
                 }
             } else if (e.code == "Enter") {
                 if (this.fs.isFile(this.lsIdx)) {
@@ -61,6 +77,18 @@ class Terminal {
     resize(canvasW, canvasH) {
         this.cols = Math.floor(canvasW / this.charWidth);
         this.rows = Math.floor(canvasH / this.lineHeight);
+        this.setFileFocused(this.fileFocused);
+    }
+
+    setFileFocused(v) {
+        this.scroll = 0;
+        this.fileFocused = v;
+        if (this.fileFocused) {
+            this.leftSectionCols = this.styles.horizontalMargin;
+        } else {
+            this.leftSectionCols = Math.floor(this.styles.leftSectionWidthPer * this.cols);
+        }
+        this.rightSectionCols = this.cols - Math.floor(this.styles.leftSectionWidthPer * this.cols) - 2;
     }
 
     toCanvasCoords(row, col) {
@@ -101,8 +129,7 @@ class Terminal {
     async requestFile(fileID) {
         if (fileID in this.fileCache) return;
 
-        const contentWidth = this.cols - Math.floor(this.styles.currDirZonePer * this.cols) - 1;
-        this.fileCache[fileID] = FileFactory.createLoadFile(contentWidth);
+        this.fileCache[fileID] = FileFactory.createLoadFile(this.rightSectionCols);
         this.fileCache[fileID].load();
         const fileData = await repo.getFileData(fileID);
         await this.fileCache[fileID].doneLoading();
@@ -116,7 +143,7 @@ class Terminal {
     }
 
     render() {
-        const sepCol = Math.floor(this.styles.currDirZonePer * this.cols);
+        const sepCol = this.leftSectionCols;
         let row = 1;
 
         // Background color
@@ -129,22 +156,26 @@ class Terminal {
         row += headerLines + 1;
 
         // CWD path
-        this.write(this.fs.pwd(), row, 1);
+        const pwd = this.fs.pwd() + (this.fileFocused ? this.fs.getFileName(this.lsIdx) : "");
+        this.write(pwd, row, 1);
         row++;
 
-        // Separators
-        this.drawSeparator(row, 1, this.rows - row);
-        this.drawSeparator(row, sepCol, this.rows - row);
-
-        // Highlight rects
+        // Highlight rect
         this.drawRect(this.lsIdx + row, 2, sepCol - 2, 1, true);
 
         // CWD contents
         const ls = this.fs.ls();
         for (let i = 0; i < ls.length; i++) {
             const name = ls[i];
-            this.write(name, i + row, this.styles.horizontalMargin + 1, i == this.lsIdx);
+            this.write(name, i + row, this.styles.horizontalMargin + 2, i == this.lsIdx);
         }
+
+        // Background color on the right section
+        this.drawRect(row, sepCol, this.cols - sepCol + 1, this.rows - row + 1);
+
+        // Left and center separators
+        this.drawSeparator(row, 1, this.rows - row);
+        this.drawSeparator(row, sepCol, this.rows - row);
 
         // Hovered subdir contents
         if (this.fs.isSubdir(this.lsIdx)) {
@@ -159,8 +190,22 @@ class Terminal {
         if (this.fs.isFile(this.lsIdx)) {
             const fileID = this.fs.getFileID(this.lsIdx);
             this.requestFile(fileID);
-            this.write(this.fileCache[fileID].text, row, sepCol + 1);
+
+            const rightSectionRows = this.rows - row;
+            this.fileCache[fileID].render(
+                this.ctx,
+                rightSectionRows,
+                this.rightSectionCols,
+                this.lineHeight,
+                this.lineVerticalMargin,
+                this.scroll,
+                (r, c) => this.toCanvasCoords(row + r, sepCol + c + 1)
+            );
         }
+
+        // Rightmost separator
+        this.drawRect(row, this.cols - 1, 2, this.rows - row);
+        this.drawSeparator(row, this.cols - 1, this.rows - row);
     }
 }
 

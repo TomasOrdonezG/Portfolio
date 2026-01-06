@@ -6,6 +6,20 @@ class File {
     }
 
     async run() { }
+
+    render(ctx, rows, cols, lineHeight, lineVerticalMargin, scroll, toCanvasCoords) {
+        const write = (text, r, c) => {
+            const { x, y } = toCanvasCoords(r, c);
+            ctx.fillText(text, x, y + lineHeight - (lineVerticalMargin / 2.0));
+        }
+        const lines = this.text.split("\n");
+        let row = 0;
+        for (const line of lines) {
+            if (row >= rows) break;
+            write(line, row, 0);
+            row++;
+        }
+    }
 };
 
 class LoadFile extends File {
