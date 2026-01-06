@@ -65,16 +65,16 @@ class FileSystem {
         return cwd.files[fileIdx].id;
     }
 
-    pwd() {
-        return "/" + this.path.join("/") + (this.path.length > 0 ? "/" : "");
-    }
-
     getFileName(lsIdx) {
         if (!this.isFile(lsIdx)) {
             throw Error("Invalid file index.");
         }
         const fileIdx = this.lsIdxToFileIdx(lsIdx);
         return this.cwd().files[fileIdx].name;
+    }
+
+    pwd() {
+        return "/" + this.path.join("/") + (this.path.length > 0 ? "/" : "");
     }
 
     lsByIdxPath(idxPath) {

@@ -36,7 +36,7 @@ class Terminal {
                     this.lsIdx = Math.max(this.lsIdx - 1, 0);
                 } else {
                     // Scroll file
-                    // TODO
+                    this.fileCache[this.fs.getFileID(this.lsIdx)].scrollUp();
                 }
             } else if (e.code == "ArrowDown") {
                 if (!this.fileFocused) {
@@ -49,7 +49,7 @@ class Terminal {
                     }
                 } else {
                     // Scroll file
-                    // TODO
+                    this.fileCache[this.fs.getFileID(this.lsIdx)].scrollDown();
                 }
             } else if (e.code == "ArrowRight") {
                 if (this.fs.isSubdir(this.lsIdx)) {
@@ -81,7 +81,6 @@ class Terminal {
     }
 
     setFileFocused(v) {
-        this.scroll = 0;
         this.fileFocused = v;
         if (this.fileFocused) {
             this.leftSectionCols = this.styles.horizontalMargin;
@@ -198,7 +197,6 @@ class Terminal {
                 this.rightSectionCols,
                 this.lineHeight,
                 this.lineVerticalMargin,
-                this.scroll,
                 (r, c) => this.toCanvasCoords(row + r, sepCol + c + 1)
             );
         }
