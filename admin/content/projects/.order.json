@@ -1,0 +1,10 @@
+{
+    "files": [],
+    "subdirs": [
+        "skks",
+        "y",
+        "graph_visualizer",
+        "quaternion_julia_sets",
+        "engine_3d"
+    ]
+}

@@ -1,0 +1,12 @@
+{
+    "files": [
+        "about_me.txt",
+        "resume.pdf"
+    ],
+    "subdirs": [
+        "projects",
+        "work_experience",
+        "education",
+        "contact"
+    ]
+}

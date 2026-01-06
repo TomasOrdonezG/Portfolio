@@ -1,4 +1,4 @@
-import os
+import os, json
 from pathlib import Path
 from firebase_admin import credentials, initialize_app, firestore, storage
 
@@ -12,6 +12,8 @@ SHADERS_COLLECTION = "shaders"
 FILES_COLLECTION = "files"
 DIR_STRUCTURE_COLLECTION = "dir-structure"
 DIR_STRUCTURE_DOCUMENT = "root"
+
+ORDER_FILE_NAME = ".order.json"
 
 cred = credentials.Certificate("./serviceAccountKey.json")
 initialize_app(cred, {
@@ -38,6 +40,19 @@ def filepath_to_id(filepath):
     """
     return filepath.replace(CONTENT_PATH, "").replace("/", "\\")
 
+def sort_content(content, order):
+    """
+    Sorts the files and subdirs according to an order.
+    """
+    def sort_selection(items, order_list):
+        priority = { name: i for i, name in enumerate(order_list) }
+        return sorted(
+            items,
+            key=lambda x: priority.get(x["name"], len(priority))
+        )
+    content["files"] = sort_selection(content["files"], order["files"])
+    content["subdirs"] = sort_selection(content["subdirs"], order["subdirs"])
+
 def get_contents():
     """
     Creates a dictionary containing the entire directory structure as well as a list of all files.
@@ -49,7 +64,7 @@ def get_contents():
     def DFS(dirpath, cur_dir_structure):
         cur_dir_structure["subdirs"] = []
         cur_dir_structure["files"] = []
-        
+
         for name in os.listdir(dirpath):
             subpath = os.path.join(dirpath, name)
             if os.path.isdir(subpath):
@@ -57,11 +72,17 @@ def get_contents():
                 cur_dir_structure["subdirs"].append(subdir_data)
                 DFS(subpath, cur_dir_structure["subdirs"][-1])
             else:
+                if name.startswith("."):
+                    continue
                 subfile_data = { "name": name, "id": filepath_to_id(subpath) }
                 cur_dir_structure["files"].append(subfile_data)
                 filepaths.append(subpath)
 
-    # TODO: Sort subdirs and files
+        # Sort content
+        order_filepath = os.path.join(dirpath, ORDER_FILE_NAME)
+        if os.path.exists(order_filepath):
+            with open(order_filepath, "r") as f:
+                sort_content(cur_dir_structure, json.load(f))
 
     dir_structure["name"] = ""
     DFS(CONTENT_PATH, dir_structure)
