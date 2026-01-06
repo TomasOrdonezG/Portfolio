@@ -5,9 +5,9 @@ import repo from "./repository.js";
 const GRAIN_IMG_PATH = "images/grain.png";
 
 class App extends GlApp {
-    constructor(vertexShaderCode, fragShaderCode, grainImgBlob, dirStructure) {
+    constructor(vertexShaderCode, fragShaderCode, grainImgBlob, dirStructure, font) {
         super(vertexShaderCode, fragShaderCode, grainImgBlob);
-        this.term = new Terminal(dirStructure, this.uiCtx);
+        this.term = new Terminal(dirStructure, this.uiCtx, font);
         this.resize();
     }
 
@@ -16,7 +16,9 @@ class App extends GlApp {
         const fs = await repo.getShader("tv.frag");
         const dirStructure = await repo.getDirStructure();
         const grainImgBlob = await repo.getFileBlob(GRAIN_IMG_PATH);
-        return new App(vs, fs, grainImgBlob, dirStructure);
+        const font = "900 28px 'Doto'";
+        await document.fonts.load(font);
+        return new App(vs, fs, grainImgBlob, dirStructure, font);
     }
 
     onResize(canvasW, canvasH) {
@@ -30,5 +32,4 @@ class App extends GlApp {
     }
 }
 
-const app = await App.create();
-export default app;
+export default App;

@@ -1,2 +1,5 @@
-import app from "./app.js"
+import App from "./app.js"
+
+const app = await App.create();
 app.run();
+

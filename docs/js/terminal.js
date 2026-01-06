@@ -4,7 +4,7 @@ import repo from "./repository.js";
 import strings from "./strings.js";
 
 class Terminal {
-    constructor(dirStructure, ctx, styles = {}) {
+    constructor(dirStructure, ctx, font, styles = {}) {
         this.fs = new FileSystem(dirStructure);
         this.ctx = ctx;
 
@@ -16,7 +16,15 @@ class Terminal {
             currDirZonePer: styles.currDirZonePer ?? 0.3,
             horizontalMargin: styles.horizontalMargin ?? 2,
         };
-        this.setFont();
+
+        this.font = font;
+        this.ctx.font = this.font;
+        const metrics = this.ctx.measureText('M');
+        this.charWidth = metrics.width;
+        this.lineHeight = Math.ceil(metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent);
+        this.lineVerticalMargin = this.styles.lineVerticalMarginPer * this.lineHeight;
+        this.lineHeight += this.lineVerticalMargin;
+
 
         this.lsIdx = 0;
         this.fileCache = {};
@@ -51,21 +59,8 @@ class Terminal {
     }
 
     resize(canvasW, canvasH) {
-        this.setFont();
         this.cols = Math.floor(canvasW / this.charWidth);
         this.rows = Math.floor(canvasH / this.lineHeight);
-    }
-
-    setFont(size = this.styles.fontSize) {
-        this.styles.fontSize = size;
-        this.ctx.font = `900 ${this.styles.fontSize}px 'Doto'`;
-        // this.ctx.font = `500 ${this.styles.fontSize}px monospace`;
-
-        const metrics = this.ctx.measureText('M');
-        this.charWidth = metrics.width;
-        this.lineHeight = Math.ceil(metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent);
-        this.lineVerticalMargin = this.styles.lineVerticalMarginPer * this.lineHeight;
-        this.lineHeight += this.lineVerticalMargin;
     }
 
     toCanvasCoords(row, col) {
@@ -76,7 +71,7 @@ class Terminal {
     }
 
     write(text, row, col, highlighted = false) {
-        this.setFont();
+        this.ctx.font = this.font;
         this.ctx.fillStyle = highlighted ? this.styles.bgColor : this.styles.highlightColor;
         const lines = text.split("\n");
         for (const line of lines) {
