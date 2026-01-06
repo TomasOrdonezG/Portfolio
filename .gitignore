@@ -1,4 +1,4 @@
 .vscode/
 admin/.venv/
 admin/serviceAccountKey.json
-client/node_modules
+docs/node_modules
