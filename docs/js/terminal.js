@@ -54,7 +54,7 @@ class Terminal {
             } else if (e.code == "ArrowRight") {
                 if (this.fs.isSubdir(this.lsIdx)) {
                     this.lsIdx = this.fs.cd(this.lsIdx);
-                } else {
+                } else if (this.fs.isFile(this.lsIdx)) {
                     this.setFileFocused(true);
                 }
             } else if (e.code == "ArrowLeft") {
@@ -170,11 +170,12 @@ class Terminal {
         }
 
         // Background color on the right section
-        this.drawRect(row, sepCol, this.cols - sepCol + 1, this.rows - row + 1);
+        const sectionRows = this.rows - row;
+        this.drawRect(row, sepCol, this.cols - sepCol + 1, sectionRows + 1);
 
         // Left and center separators
-        this.drawSeparator(row, 1, this.rows - row);
-        this.drawSeparator(row, sepCol, this.rows - row);
+        this.drawSeparator(row, 1, sectionRows);
+        this.drawSeparator(row, sepCol, sectionRows);
 
         // Hovered subdir contents
         if (this.fs.isSubdir(this.lsIdx)) {
@@ -190,10 +191,9 @@ class Terminal {
             const fileID = this.fs.getFileID(this.lsIdx);
             this.requestFile(fileID);
 
-            const rightSectionRows = this.rows - row;
             this.fileCache[fileID].render(
                 this.ctx,
-                rightSectionRows,
+                sectionRows,
                 this.rightSectionCols,
                 this.lineHeight,
                 this.lineVerticalMargin,
@@ -202,8 +202,23 @@ class Terminal {
         }
 
         // Rightmost separator
-        this.drawRect(row, this.cols - 1, 2, this.rows - row);
-        this.drawSeparator(row, this.cols - 1, this.rows - row);
+        this.drawRect(row, this.cols - 1, 2, sectionRows);
+        this.drawSeparator(row, this.cols - 1, sectionRows);
+
+        // Scrollbar
+        if (this.fileFocused) {
+            const file = this.fileCache[this.fs.getFileID(this.lsIdx)];
+            const sectionHeight = this.lineHeight * sectionRows;
+
+            const contentRows = file.getMaxScroll() + sectionRows;
+            const { x, y } = this.toCanvasCoords(row, this.cols - 1);
+            const w = this.charWidth;
+            const h = sectionRows / contentRows * sectionHeight;
+            const offset = file.getScroll() / contentRows * sectionHeight;
+
+            this.ctx.fillStyle = this.styles.highlightColor;
+            this.ctx.fillRect(x, y + offset, w, h);
+        }
     }
 }
 

@@ -8,6 +8,14 @@ class File {
 
     async run() { }
 
+    getScroll() {
+        return this.scroll;
+    }
+
+    getMaxScroll() {
+        return this.lines.length - 1;
+    }
+
     setText(text) {
         this.lines = text.replace(/\n+$/, "").split("\n");
     }
@@ -17,7 +25,7 @@ class File {
     }
 
     scrollDown() {
-        this.scroll = Math.min(this.scroll + 1, this.lines.length - 1);
+        this.scroll = Math.min(this.scroll + 1, this.getMaxScroll());
     }
 
     render(ctx, rows, cols, lineHeight, lineVerticalMargin, toCanvasCoords) {
