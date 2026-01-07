@@ -90,11 +90,11 @@ class URLFile extends JSONFile {
 class MarkdownFile extends File {
     constructor(text) {
         super(text);
-        this.extraLines = 0;
+        this.fileHeight = 0;
     }
 
     getMaxScroll() {
-        return this.lines.length + this.extraLines - 1;
+        return this.fileHeight - 1;
     }
 
     async load() {
@@ -158,23 +158,50 @@ class MarkdownFile extends File {
             return { drawWidth, drawHeight, imgRows };
         };
 
-
-        // Recount extra lines
-        this.extraLines = 0;
+        // Split up lines
+        const lines = [];
         for (const line of this.lines) {
+            if (line.length <= cols) {
+                lines.push(line);
+                continue;
+            }
+
+            const words = line.split(" ");
+            const bullet = words.length > 0 && words[0] == "-";
+            let subLine = "";
+            for (const word of words) {
+                const extra = subLine === "" ? word.length : word.length + 1;
+
+                if (subLine.length + extra > cols) {
+                    lines.push(subLine);
+                    subLine = (bullet ? "  " : "") + word;
+                } else {
+                    subLine = subLine === "" ? word : subLine + " " + word;
+                }
+            }
+
+            if (subLine !== "") {
+                lines.push(subLine);
+            }
+        }
+
+        // Recompute file height
+        this.fileHeight = 0;
+        for (const line of lines) {
+            this.fileHeight++;
             const imgName = this.hasEmbeddedImage(line);
             if (imgName == null) continue;
             const img = this.imageCache[imgName];
             if (img == null) continue;
             const { imgRows } = fitImage(img);
-            this.extraLines += imgRows - 1;
+            this.fileHeight += imgRows - 1;
         }
 
         let row = 0;
 
         // Check for any images that should be drawn cropped
         let scroll = this.scroll;
-        const linesBefore = this.lines.slice(0, this.scroll);
+        const linesBefore = lines.slice(0, this.scroll);
         for (let i = 0; i < linesBefore.length; i++) {
             const imgName = this.hasEmbeddedImage(linesBefore[i]);
             if (imgName == null) continue;
@@ -210,9 +237,9 @@ class MarkdownFile extends File {
         }
 
         // Render
-        const lines = this.lines.slice(scroll);
-        for (let i = 0; i < Math.min(lines.length, rows); i++) {
-            const line = lines[i];
+        const visibleLines = lines.slice(scroll);
+        for (let i = 0; i < Math.min(visibleLines.length, rows); i++) {
+            const line = visibleLines[i];
             const imageName = this.hasEmbeddedImage(line);
 
             if (imageName) {
