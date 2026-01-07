@@ -5,6 +5,7 @@ import { ref, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.7.0/f
 const SHADERS_COLLECTION = "shaders";
 const DIR_STRUCTURE_COLLECTION = "dir-structure";
 const FILES_COLLECTION = "files";
+const IMAGES_PATH = "images/";
 const DIR_STRUCTURE_DOCUMENT = "root";
 
 class Repository {
@@ -28,18 +29,33 @@ class Repository {
     }
 
     async getFileBlob(filepath) {
-        const url = await getDownloadURL(ref(storage, filepath));
-        const res = await fetch(url);
-        if (!res.ok) return null;
-        return await res.blob();
+        try {
+            const url = await getDownloadURL(ref(storage, filepath));
+            const res = await fetch(url);
+            if (!res.ok) return null;
+            return await res.blob();
+        } catch {
+            return null;
+        }
+    }
+
+    async getImageDownloadURL(imageName) {
+        try {
+            return await getDownloadURL(ref(storage, IMAGES_PATH + imageName));
+        } catch {
+            return null;
+        }
     }
 
     async openFile(filepath) {
-        const url = await getDownloadURL(ref(storage, filepath));
-        window.open(url, "_blank", "noopener");
+        try {
+            const url = await getDownloadURL(ref(storage, filepath));
+            window.open(url, "_blank", "noopener");
+        } catch {
+            console.error(`Failed to open file with path '${filepath}'`)
+        }
     }
 }
 
 const repo = new Repository();
 export default repo;
-

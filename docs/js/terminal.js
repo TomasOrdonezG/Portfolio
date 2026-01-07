@@ -87,7 +87,7 @@ class Terminal {
         } else {
             this.leftSectionCols = Math.floor(this.styles.leftSectionWidthPer * this.cols);
         }
-        this.rightSectionCols = this.cols - Math.floor(this.styles.leftSectionWidthPer * this.cols) - 2;
+        this.rightSectionCols = this.cols - Math.floor(this.styles.leftSectionWidthPer * this.cols) - 3;
     }
 
     toCanvasCoords(row, col) {
@@ -128,11 +128,19 @@ class Terminal {
     async requestFile(fileID) {
         if (fileID in this.fileCache) return;
 
-        this.fileCache[fileID] = FileFactory.createLoadFile(this.rightSectionCols);
-        this.fileCache[fileID].load();
+        // Use a temporary loader file
+        const tmpLoadFile = FileFactory.createLoadFile(this.rightSectionCols);
+        this.fileCache[fileID] = tmpLoadFile;
+        tmpLoadFile.load();
+
+        // Wait for actual file to load
         const fileData = await repo.getFileData(fileID);
-        await this.fileCache[fileID].doneLoading();
-        this.fileCache[fileID] = FileFactory.create(fileData.name, fileData.data);
+        const file = FileFactory.create(fileData.name, fileData.data);
+        await file.load();
+
+        // Replace loader file once actual file has loaded
+        await tmpLoadFile.doneLoading();
+        this.fileCache[fileID] = file;
     }
 
     getHeader() {
@@ -157,7 +165,7 @@ class Terminal {
         // CWD path
         const pwd = this.fs.pwd() + (this.fileFocused ? this.fs.getFileName(this.lsIdx) : "");
         this.write(pwd, row, 1);
-        row++;
+        row += 2;
 
         // Highlight rect
         this.drawRect(this.lsIdx + row, 2, sepCol - 2, 1, true);
@@ -194,16 +202,17 @@ class Terminal {
             this.fileCache[fileID].render(
                 this.ctx,
                 sectionRows,
-                this.rightSectionCols,
+                this.fileFocused ? this.cols - 3 : this.rightSectionCols,
                 this.lineHeight,
+                this.charWidth,
                 this.lineVerticalMargin,
                 (r, c) => this.toCanvasCoords(row + r, sepCol + c + 1)
             );
         }
 
         // Rightmost separator
-        this.drawRect(row, this.cols - 1, 2, sectionRows);
-        this.drawSeparator(row, this.cols - 1, sectionRows);
+        this.drawRect(row, this.cols - 2, 3, sectionRows + 1);
+        this.drawSeparator(row, this.cols - 2, sectionRows);
 
         // Scrollbar
         if (this.fileFocused) {
@@ -211,7 +220,7 @@ class Terminal {
             const sectionHeight = this.lineHeight * sectionRows;
 
             const contentRows = file.getMaxScroll() + sectionRows;
-            const { x, y } = this.toCanvasCoords(row, this.cols - 1);
+            const { x, y } = this.toCanvasCoords(row, this.cols - 2);
             const w = this.charWidth;
             const h = sectionRows / contentRows * sectionHeight;
             const offset = file.getScroll() / contentRows * sectionHeight;
