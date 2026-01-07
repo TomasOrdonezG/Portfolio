@@ -1,6 +1,7 @@
 import FileFactory from "./file.js";
 import FileSystem from "./fileSystem.js";
 import repo from "./repository.js";
+import { soundMgr, BEEP_SOUND_NAME } from "./soundManager.js";
 import strings from "./strings.js";
 
 class Terminal {
@@ -31,6 +32,7 @@ class Terminal {
 
         document.addEventListener("keydown", e => {
             if (e.code == "ArrowUp") {
+                soundMgr.playSound(BEEP_SOUND_NAME);
                 if (!this.fileFocused) {
                     // Scroll file system
                     this.lsIdx = Math.max(this.lsIdx - 1, 0);
@@ -39,6 +41,7 @@ class Terminal {
                     this.fileCache[this.fs.getFileID(this.lsIdx)].scrollUp();
                 }
             } else if (e.code == "ArrowDown") {
+                soundMgr.playSound(BEEP_SOUND_NAME);
                 if (!this.fileFocused) {
                     // Scroll file system
                     const ls = this.fs.ls();
@@ -53,20 +56,25 @@ class Terminal {
                 }
             } else if (e.code == "ArrowRight") {
                 if (this.fs.isSubdir(this.lsIdx)) {
+                    soundMgr.playSound(BEEP_SOUND_NAME);
                     this.lsIdx = this.fs.cd(this.lsIdx);
                 } else if (this.fs.isFile(this.lsIdx)) {
+                    soundMgr.playSound(BEEP_SOUND_NAME);
                     this.setFileFocused(true);
                 }
             } else if (e.code == "ArrowLeft") {
                 if (!this.fs.inRoot() && !this.fileFocused) {
+                    soundMgr.playSound(BEEP_SOUND_NAME);
                     this.lsIdx = this.fs.cd(-1);
                 } else if (this.fileFocused) {
+                    soundMgr.playSound(BEEP_SOUND_NAME);
                     this.setFileFocused(false);
                 }
             } else if (e.code == "Enter") {
                 if (this.fs.isFile(this.lsIdx)) {
                     const fileID = this.fs.getFileID(this.lsIdx);
                     if (fileID in this.fileCache) {
+                        soundMgr.playSound(BEEP_SOUND_NAME);
                         this.fileCache[fileID].run();
                     }
                 }

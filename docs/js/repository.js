@@ -6,6 +6,7 @@ const SHADERS_COLLECTION = "shaders";
 const DIR_STRUCTURE_COLLECTION = "dir-structure";
 const FILES_COLLECTION = "files";
 const IMAGES_PATH = "images/";
+const SOUNDS_PATH = "sounds/";
 const DIR_STRUCTURE_DOCUMENT = "root";
 
 class Repository {
@@ -42,6 +43,14 @@ class Repository {
     async getImageDownloadURL(imageName) {
         try {
             return await getDownloadURL(ref(storage, IMAGES_PATH + imageName));
+        } catch {
+            return null;
+        }
+    }
+
+    async getSoundDownloadURL(imageName) {
+        try {
+            return await getDownloadURL(ref(storage, SOUNDS_PATH + imageName));
         } catch {
             return null;
         }
