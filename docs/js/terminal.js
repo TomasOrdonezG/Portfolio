@@ -30,62 +30,94 @@ class Terminal {
         this.fileCache = {};
         this.setFileFocused(false);
 
-        document.addEventListener("keydown", e => {
-            if (e.code == "ArrowUp") {
-                soundMgr.playSound(BEEP_SOUND_NAME);
-                if (!this.fileFocused) {
-                    // Scroll file system
-                    this.lsIdx = Math.max(this.lsIdx - 1, 0);
-                } else {
-                    // Scroll file
-                    this.fileCache[this.fs.getFileID(this.lsIdx)].scrollUp();
-                }
-            } else if (e.code == "ArrowDown") {
-                soundMgr.playSound(BEEP_SOUND_NAME);
-                if (!this.fileFocused) {
-                    // Scroll file system
-                    const ls = this.fs.ls();
-                    if (ls.length == 0) {
-                        this.lsIdx = 0;
-                    } else {
-                        this.lsIdx = Math.min(this.lsIdx + 1, this.fs.ls().length - 1);
-                    }
-                } else {
-                    // Scroll file
-                    this.fileCache[this.fs.getFileID(this.lsIdx)].scrollDown();
-                }
-            } else if (e.code == "ArrowRight") {
-                if (this.fs.isSubdir(this.lsIdx)) {
-                    soundMgr.playSound(BEEP_SOUND_NAME);
-                    this.lsIdx = this.fs.cd(this.lsIdx);
-                } else if (this.fs.isFile(this.lsIdx)) {
-                    soundMgr.playSound(BEEP_SOUND_NAME);
-                    this.setFileFocused(true);
-                }
-            } else if (e.code == "ArrowLeft") {
-                if (!this.fs.inRoot() && !this.fileFocused) {
-                    soundMgr.playSound(BEEP_SOUND_NAME);
-                    this.lsIdx = this.fs.cd(-1);
-                } else if (this.fileFocused) {
-                    soundMgr.playSound(BEEP_SOUND_NAME);
-                    this.setFileFocused(false);
-                }
-            } else if (e.code == "Enter") {
-                if (this.fs.isFile(this.lsIdx)) {
-                    const fileID = this.fs.getFileID(this.lsIdx);
-                    if (fileID in this.fileCache) {
-                        soundMgr.playSound(BEEP_SOUND_NAME);
-                        this.fileCache[fileID].run();
-                    }
-                }
+        document.addEventListener("keydown", e => this.onKeydown(e.code));
+    }
+
+    onKeydown(keycode) {
+        if (keycode == "ArrowUp") {
+            soundMgr.playSound(BEEP_SOUND_NAME);
+            if (!this.fileFocused) {
+                // Scroll file system
+                this.lsIdx = Math.max(this.lsIdx - 1, 0);
+
+                // Notify new file of hover
+                this.hoveredFile(f => f.onHover());
+            } else {
+                // Scroll file
+                this.fileCache[this.fs.getFileID(this.lsIdx)].scrollUp();
             }
-        });
+        }
+
+        else if (keycode == "ArrowDown") {
+            soundMgr.playSound(BEEP_SOUND_NAME);
+            if (!this.fileFocused) {
+                // Scroll file system
+                const ls = this.fs.ls();
+                if (ls.length == 0) {
+                    this.lsIdx = 0;
+                } else {
+                    this.lsIdx = Math.min(this.lsIdx + 1, this.fs.ls().length - 1);
+                }
+
+                // Notify new file of hover
+                this.hoveredFile(f => f.onHover());
+            } else {
+                // Scroll file
+                this.fileCache[this.fs.getFileID(this.lsIdx)].scrollDown();
+            }
+        }
+
+        else if (keycode == "ArrowRight") {
+            if (this.fs.isSubdir(this.lsIdx)) {
+                soundMgr.playSound(BEEP_SOUND_NAME);
+                this.lsIdx = this.fs.cd(this.lsIdx);
+            } else if (this.fs.isFile(this.lsIdx)) {
+                soundMgr.playSound(BEEP_SOUND_NAME);
+                this.setFileFocused(true);
+
+                // Notify file of focus
+                this.hoveredFile(f => f.onFocus());
+            }
+        }
+
+        else if (keycode == "ArrowLeft") {
+            if (!this.fs.inRoot() && !this.fileFocused) {
+                soundMgr.playSound(BEEP_SOUND_NAME);
+                this.lsIdx = this.fs.cd(-1);
+            } else if (this.fileFocused) {
+                soundMgr.playSound(BEEP_SOUND_NAME);
+                this.setFileFocused(false);
+
+                // Notify file of hover
+                this.hoveredFile(f => f.onHover());
+            }
+        }
+
+        else if (keycode == "Enter") {
+            // Run hovered file
+            this.hoveredFile(f => {
+                soundMgr.playSound(BEEP_SOUND_NAME);
+                f.run();
+            });
+        }
+    }
+
+    hoveredFile(callback) {
+        if (this.fs.isFile(this.lsIdx)) {
+            const id = this.fs.getFileID(this.lsIdx);
+            if (id in this.fileCache) {
+                callback(this.fileCache[id]);
+            }
+        }
     }
 
     resize(canvasW, canvasH) {
         this.cols = Math.floor(canvasW / this.charWidth);
         this.rows = Math.floor(canvasH / this.lineHeight);
         this.setFileFocused(this.fileFocused);
+
+        // Notify hovered file of resize
+        this.hoveredFile(f => f.onResize());
     }
 
     setFileFocused(v) {

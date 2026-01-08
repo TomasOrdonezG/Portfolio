@@ -13,6 +13,12 @@ class File {
 
     async load() { }
 
+    onResize() { }
+
+    onFocus() { }
+
+    onHover() { }
+
     getScroll() {
         return this.scroll;
     }
@@ -90,12 +96,17 @@ class URLFile extends JSONFile {
 class MarkdownFile extends File {
     constructor(text) {
         super(text);
-        this.fileHeight = 0;
+        this.content = [];
+        this.dirty = true;
     }
 
-    getMaxScroll() {
-        return this.fileHeight - 1;
-    }
+    onResize() { this.dirty = true; }
+
+    onFocus() { this.dirty = true; }
+
+    onHover() { this.dirty = true; }
+
+    getMaxScroll() { return this.content.length - 1; }
 
     async load() {
         this.imageCache = {};
@@ -131,7 +142,7 @@ class MarkdownFile extends File {
         return matches ? matches[1] : null;
     }
 
-    render(ctx, rows, cols, rowHeight, colWidth, lineVerticalMargin, toCanvasCoords) {
+    recomputeContent(ctx, rows, cols, rowHeight, colWidth, lineVerticalMargin, toCanvasCoords) {
         const w = cols * colWidth;
         const h = rows * rowHeight;
 
@@ -159,10 +170,10 @@ class MarkdownFile extends File {
         };
 
         // Split up lines
-        const lines = [];
+        const splitUpLines = [];
         for (const line of this.lines) {
             if (line.length <= cols) {
-                lines.push(line);
+                splitUpLines.push(line);
                 continue;
             }
 
@@ -173,7 +184,7 @@ class MarkdownFile extends File {
                 const extra = subLine === "" ? word.length : word.length + 1;
 
                 if (subLine.length + extra > cols) {
-                    lines.push(subLine);
+                    splitUpLines.push(subLine);
                     subLine = (bullet ? "  " : "") + word;
                 } else {
                     subLine = subLine === "" ? word : subLine + " " + word;
@@ -181,89 +192,96 @@ class MarkdownFile extends File {
             }
 
             if (subLine !== "") {
-                lines.push(subLine);
+                splitUpLines.push(subLine);
             }
         }
 
-        // Recompute file height
-        this.fileHeight = 0;
-        for (const line of lines) {
+        // Compute content for each line
+        this.content = [];
+        for (const line of splitUpLines) {
             this.fileHeight++;
+            const idx = this.content.length;
+
+            // Line of text
             const imgName = this.hasEmbeddedImage(line);
-            if (imgName == null) continue;
+            if (imgName == null) {
+                this.content.push({
+                    type: "text", draw: () => {
+                        const { x, y } = toCanvasCoords(idx - this.scroll, 0);
+                        ctx.fillText(line, x, y + rowHeight - (lineVerticalMargin / 2.0));
+                    }
+                });
+                continue;
+            }
+
+            // Image failed to load
             const img = this.imageCache[imgName];
-            if (img == null) continue;
-            const { imgRows } = fitImage(img);
-            this.fileHeight += imgRows - 1;
-        }
+            if (img == null) {
+                this.content.push({
+                    type: "text",
+                    draw: () => {
+                        const { x, y } = toCanvasCoords(idx - this.scroll, 0);
+                        ctx.fillText(`[[Image '${imgName}' not found]]`, x, y + rowHeight - (lineVerticalMargin / 2.0));
+                    }
+                });
+                continue;
+            }
 
-        let row = 0;
-
-        // Check for any images that should be drawn cropped
-        let scroll = this.scroll;
-        const linesBefore = lines.slice(0, this.scroll);
-        for (let i = 0; i < linesBefore.length; i++) {
-            const imgName = this.hasEmbeddedImage(linesBefore[i]);
-            if (imgName == null) continue;
-            const img = this.imageCache[imgName];
-            if (img == null) continue;
-
+            // Image
             const { drawWidth, drawHeight, imgRows } = fitImage(img);
+            this.content.push({
+                type: "image",
+                top: true,
+                draw: () => {
+                    const { x, y } = toCanvasCoords(idx - this.scroll, 0);
+                    ctx.drawImage(img, x + Math.round((w - drawWidth) / 2), y, drawWidth, drawHeight);
+                }
+            });
+            for (let i = 1; i < imgRows; i++) {
+                this.content.push({
+                    type: "image",
+                    top: false,
+                    draw: () => {
+                        const syCanvas = i * rowHeight;
+                        const destRemainH = Math.max(0, Math.round(drawHeight - syCanvas));
 
-            if (i + imgRows >= this.scroll) {
-                console.log(imgName);
-                row = i + imgRows - this.scroll;
-                scroll = i + 1;
+                        if (destRemainH <= 0) return;
 
-                const syCanvas = (this.scroll - i) * rowHeight;
-                const destRemainH = Math.max(0, Math.round(drawHeight - syCanvas));
+                        // Crop image and draw
+                        const { x, y } = toCanvasCoords(0, 0);
+                        const scaleY = img.height / drawHeight;
+                        const srcX = 0;
+                        const srcY = Math.round(syCanvas * scaleY);
+                        const srcH = Math.min(img.height - srcY, Math.round(destRemainH * scaleY));
+                        const destX = x + Math.round((w - drawWidth) / 2);
+                        const destY = y;
+                        const destW = Math.round(drawWidth);
+                        const destH = Math.round(destRemainH);
 
-                if (destRemainH <= 0) break;
-
-                // Crop image and draw
-                const { x, y } = toCanvasCoords(0, 0);
-                const scaleY = img.height / drawHeight;
-                const srcX = 0;
-                const srcY = Math.round(syCanvas * scaleY);
-                const srcH = Math.min(img.height - srcY, Math.round(destRemainH * scaleY));
-                const destX = x + Math.round((w - drawWidth) / 2);
-                const destY = y;
-                const destW = Math.round(drawWidth);
-                const destH = Math.round(destRemainH);
-
-                ctx.drawImage(img, srcX, srcY, img.width, srcH, destX, destY, destW, destH);
-
-                break;
+                        ctx.drawImage(img, srcX, srcY, img.width, srcH, destX, destY, destW, destH);
+                    }
+                });
             }
         }
+    }
 
-        // Render
-        const visibleLines = lines.slice(scroll);
-        for (let i = 0; i < Math.min(visibleLines.length, rows); i++) {
-            const line = visibleLines[i];
-            const imageName = this.hasEmbeddedImage(line);
+    render(ctx, rows, cols, rowHeight, colWidth, lineVerticalMargin, toCanvasCoords) {
+        // Recompute content if dirty
+        if (this.dirty) {
+            this.recomputeContent(ctx, rows, cols, rowHeight, colWidth, lineVerticalMargin, toCanvasCoords);
+            this.dirty = false;
+        }
 
-            if (imageName) {
-                // Render image
-                const { x, y } = toCanvasCoords(row, 0);
-                const img = this.imageCache[imageName];
-
-                // If image was not found
-                if (img == null) {
-                    const text = `[[Image '${imageName}' not found]]`;
-                    ctx.fillText(text, x, y + rowHeight - (lineVerticalMargin / 2.0));
-                    row++;
-                    continue;
-                }
-
-                const { drawWidth, drawHeight, imgRows } = fitImage(img);
-                ctx.drawImage(img, x + Math.round((w - drawWidth) / 2), y, drawWidth, drawHeight);
-                row += imgRows;
-            } else {
-                // Write text
-                const { x, y } = toCanvasCoords(row, 0);
-                ctx.fillText(line, x, y + rowHeight - (lineVerticalMargin / 2.0));
-                row++;
+        // Render only visible lines
+        const curContent = this.content.slice(this.scroll, Math.min(this.content.length, this.scroll + rows));
+        let drawingImage = false;
+        for (const item of curContent) {
+            if (item.type == "text") {
+                drawingImage = false;
+                item.draw();
+            } else if (item.type == "image" && (!drawingImage || item.top)) {
+                item.draw();
+                drawingImage = true;
             }
         }
     }
