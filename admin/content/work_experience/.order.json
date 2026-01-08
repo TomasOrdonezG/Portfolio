@@ -1,9 +1,9 @@
 {
     "files": [
-        "research_nserc.txt",
-        "cmput_201_ta.txt",
-        "cmput_204_ta.txt",
-        "cmput_474_ta.txt"
+        "research_nserc.md",
+        "cmput_201_ta.md",
+        "cmput_204_ta.md",
+        "cmput_474_ta.md"
     ],
     "subdirs": []
 }
