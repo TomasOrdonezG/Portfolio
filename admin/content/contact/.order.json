@@ -2,7 +2,8 @@
     "files": [
         "gmail.txt",
         "linkedin.url",
-        "github.url"
+        "github.url",
+        "itchio.url"
     ],
     "subdirs": []
 }

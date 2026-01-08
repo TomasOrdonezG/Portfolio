@@ -211,6 +211,7 @@ class MarkdownFile extends File {
             const { drawWidth, drawHeight, imgRows } = fitImage(img);
 
             if (i + imgRows >= this.scroll) {
+                console.log(imgName);
                 row = i + imgRows - this.scroll;
                 scroll = i + 1;
 
