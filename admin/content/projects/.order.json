@@ -1,10 +1,13 @@
 {
     "files": [
         "skks.md",
+        "engine_3d.md",
+        "portfolio.md",
         "y.md",
-        "graph_visualizer.md",
         "quaternion_julia_sets.md",
-        "engine_3d.md"
+        "graph_visualizer.md",
+        "spirograph.md",
+        "fractals.md"
     ],
     "subdirs": []
 }

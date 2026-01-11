@@ -1,3 +1,0 @@
-My name is Tomas Ordonez Gonzalez,
-I am a fourth year student at the University of Alberta.
-...

@@ -1,6 +1,7 @@
 {
     "files": [
-        "about_me.md",
+        "tutorial.md",
+        "about.md",
         "resume.pdf"
     ],
     "subdirs": [
