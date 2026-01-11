@@ -4,7 +4,7 @@ This is my personal website used to showcase my projects, academic performance, 
 
 The content is shown within files in an file system navigated through a TUI app on a retro computer.
 
-![admin/storage/images/portfolio.png](image of the site)
+![image of the site](admin/storage/images/portfolio.png)
 
 The file system is updated from the actual files and directories in `admin/content/`. Running `admin/admin.py` writes the contents to the database, which the frontend then reads from.
 
