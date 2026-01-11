@@ -63,7 +63,11 @@ class LoadFile extends File {
     async load() {
         for (let i = 1; i <= this.steps && !this.loaded; i++) {
             this.setText("[" + "=".repeat(i) + " ".repeat(this.steps - i) + "]");
-            await new Promise(resolve => setTimeout(resolve, this.interval));
+
+            const t = i / this.steps;
+            const delay = this.interval * Math.exp(3 * t);
+
+            await new Promise(r => setTimeout(r, delay));
         }
     }
 
