@@ -1,21 +1,27 @@
+import EventLog from "./eventLog.js";
 import repo from "./repository.js";
 
 const MAX_IMG_WIDTH = 1000;
 const MAX_IMG_HEIGHT = 700;
 
 class File {
-    constructor(text) {
+    constructor(name, text) {
+        this.name = name;
         this.scroll = 0;
         this.setText(text);
     }
 
     async run() { }
 
-    async load() { }
+    async load() {
+        EventLog.fileLoaded(this.name);
+    }
 
     onResize() { }
 
-    onFocus() { }
+    onFocus() {
+        EventLog.fileFocused(this.name);
+    }
 
     onHover() { }
 
@@ -53,8 +59,8 @@ class File {
 };
 
 class LoadFile extends File {
-    constructor(duration, steps) {
-        super("");
+    constructor(loadingFilename, duration, steps) {
+        super(loadingFilename, "");
         this.steps = steps;
         this.interval = duration / this.steps;
         this.loaded = false;
@@ -79,8 +85,8 @@ class LoadFile extends File {
 };
 
 class JSONFile extends File {
-    constructor(data) {
-        super(data.text);
+    constructor(name, data) {
+        super(name, data.text);
         this.data = data;
     }
 }
@@ -88,27 +94,38 @@ class JSONFile extends File {
 class FileOpeningFile extends JSONFile {
     async run() {
         await repo.openFile(this.data.firebaseStoragePath);
+        EventLog.fileExecuted(this.name);
     }
 }
 
 class URLFile extends JSONFile {
     async run() {
         window.open(this.data.url, "_blank", "noopener");
+        EventLog.fileExecuted(this.name);
     }
 }
 
 class MarkdownFile extends File {
-    constructor(text) {
-        super(text);
+    constructor(name, text) {
+        super(name, text);
         this.content = [];
         this.dirty = true;
     }
 
-    onResize() { this.dirty = true; }
+    onResize() {
+        super.onResize();
+        this.dirty = true;
+    }
 
-    onFocus() { this.dirty = true; }
+    onFocus() {
+        super.onFocus();
+        this.dirty = true;
+    }
 
-    onHover() { this.dirty = true; }
+    onHover() {
+        super.onHover();
+        this.dirty = true;
+    }
 
     getMaxScroll() { return this.content.length - 1; }
 
@@ -138,6 +155,7 @@ class MarkdownFile extends File {
         }
 
         await Promise.all(promises);
+        await super.load();
     }
 
     hasEmbeddedImage(line) {
@@ -296,24 +314,24 @@ class FileFactory {
         const parts = name.split(".");
 
         if (parts.length == 1 || parts[1] == "txt") {
-            return new File(data);
+            return new File(name, data);
         } else if (parts[1] == "md") {
-            return new MarkdownFile(data);
+            return new MarkdownFile(name, data);
         }
 
         data = JSON.parse(data);
 
         if (parts[1] == "pdf") {
-            return new FileOpeningFile(data);
+            return new FileOpeningFile(name, data);
         } else if (parts[1] == "url") {
-            return new URLFile(data);
+            return new URLFile(name, data);
         }
 
-        return new File(data.text);
+        return new File(name, data.text);
     }
 
-    static createLoadFile(space) {
-        return new LoadFile(500, space - 2);
+    static createLoadFile(loadingFilename, space) {
+        return new LoadFile(loadingFilename, 500, space - 2);
     }
 };
 

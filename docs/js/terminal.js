@@ -165,17 +165,19 @@ class Terminal {
         this.ctx.fillRect(x, y, w, h);
     }
 
-    async requestFile(fileID) {
+    async requestFile() {
+        const fileID = this.fs.getFileID(this.lsIdx);
         if (fileID in this.fileCache) return;
+        const fileName = this.fs.getFileName(this.lsIdx);
 
         // Use a temporary loader file
-        const tmpLoadFile = FileFactory.createLoadFile(this.rightSectionCols);
+        const tmpLoadFile = FileFactory.createLoadFile(fileName, this.rightSectionCols);
         this.fileCache[fileID] = tmpLoadFile;
         tmpLoadFile.load();
 
         // Wait for actual file to load
         const fileData = await repo.getFileData(fileID);
-        const file = FileFactory.create(fileData.name, fileData.data);
+        const file = FileFactory.create(fileName, fileData.data);
         await file.load();
 
         // Replace loader file once actual file has loaded
@@ -236,9 +238,9 @@ class Terminal {
 
         // Hovered file contents
         if (this.fs.isFile(this.lsIdx)) {
-            const fileID = this.fs.getFileID(this.lsIdx);
-            this.requestFile(fileID);
+            this.requestFile();
 
+            const fileID = this.fs.getFileID(this.lsIdx);
             this.fileCache[fileID].render(
                 this.ctx,
                 sectionRows,
