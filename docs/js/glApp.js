@@ -56,8 +56,6 @@ class GlApp {
         const tmpData = new Uint8Array([0, 0, 0, 255]);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, tmpData);
 
-
-
         const grainImg = new Image();
         grainImg.src = URL.createObjectURL(grainImgBlob);
         grainImg.onload = () => {
@@ -102,7 +100,7 @@ class GlApp {
         this.uiCanvas.style.width = w + 'px';
         this.uiCanvas.style.height = h + 'px';
 
-        this.uiCtx.setTransform(this.DPR, 0, 0, this.DPR, 0, 0);
+        this.uiCtx.setTransform(1, 0, 0, 1, 0, 0);
         this.uiCtx.imageSmoothingEnabled = true;
 
         this.gl.viewport(0, 0, this.glCanvas.width, this.glCanvas.height);
