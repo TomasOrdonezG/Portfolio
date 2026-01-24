@@ -6,8 +6,7 @@ import strings from "./strings.js";
 class App extends GlApp {
     constructor(vertexShaderCode, fragShaderCode, dirStructure, font) {
         super(vertexShaderCode, fragShaderCode);
-        this.term = new Terminal(dirStructure, this.uiCtx, font);
-        this.resize();
+        this.term = new Terminal(dirStructure, this.uiCtx, this.uiCanvas.width, this.uiCanvas.height, font);
     }
 
     static async create() {

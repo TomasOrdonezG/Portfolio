@@ -5,10 +5,7 @@ import { soundMgr, BEEP_SOUND_NAME } from "./soundManager.js";
 import strings from "./strings.js";
 
 class Terminal {
-    constructor(dirStructure, ctx, font, styles = {}) {
-        this.fs = new FileSystem(dirStructure);
-        this.ctx = ctx;
-
+    constructor(dirStructure, ctx, canvasW, canvasH, font, styles = {}) {
         this.styles = {
             bgColor: styles.bgColor ?? '#071023',
             highlightColor: styles.highlightColor ?? '#59ffb7',
@@ -18,6 +15,7 @@ class Terminal {
             horizontalMargin: styles.horizontalMargin ?? 1,
         };
 
+        this.ctx = ctx;
         this.font = font;
         this.ctx.font = this.font;
         const metrics = this.ctx.measureText('M');
@@ -26,9 +24,13 @@ class Terminal {
         this.lineVerticalMargin = this.styles.lineVerticalMarginPer * this.lineHeight;
         this.lineHeight += this.lineVerticalMargin;
 
+        this.fs = new FileSystem(dirStructure);
+        this.resize(canvasW, canvasH);
+        this.setFileFocused(false);
+
         this.lsIdx = 0;
         this.fileCache = {};
-        this.setFileFocused(false);
+        this.loadFiles();
 
         document.addEventListener("keydown", e => this.onKeydown(e.code));
     }
@@ -120,8 +122,8 @@ class Terminal {
         this.hoveredFile(f => f.onResize());
     }
 
-    setFileFocused(v) {
-        this.fileFocused = v;
+    setFileFocused(isFileFocused) {
+        this.fileFocused = isFileFocused;
         if (this.fileFocused) {
             this.leftSectionCols = this.styles.horizontalMargin;
         } else {
@@ -165,24 +167,23 @@ class Terminal {
         this.ctx.fillRect(x, y, w, h);
     }
 
-    async requestFile() {
-        const fileID = this.fs.getFileID(this.lsIdx);
-        if (fileID in this.fileCache) return;
-        const fileName = this.fs.getFileName(this.lsIdx);
+    loadFiles() {
+        const files = this.fs.getAllFiles();
 
-        // Use a temporary loader file
-        const tmpLoadFile = FileFactory.createLoadFile(fileName, this.rightSectionCols);
-        this.fileCache[fileID] = tmpLoadFile;
-        tmpLoadFile.load();
+        // Set each file to a temporary loader file
+        for (const { name: fileName, id: fileID } of files) {
+            const tmpLoadFile = FileFactory.createLoadFile(fileName, this.rightSectionCols);
+            this.fileCache[fileID] = tmpLoadFile;
+            tmpLoadFile.load();
+        }
 
-        // Wait for actual file to load
-        const fileData = await repo.getFileData(fileID);
-        const file = FileFactory.create(fileName, fileData.data);
-        await file.load();
-
-        // Replace loader file once actual file has loaded
-        await tmpLoadFile.doneLoading();
-        this.fileCache[fileID] = file;
+        // Load each file in the background
+        for (const { name: fileName, id: fileID } of files) {
+            repo.getFileData(fileID).then(fileData => {
+                const file = FileFactory.create(fileName, fileData.data);
+                file.load().then(() => this.fileCache[fileID] = file);
+            });
+        }
     }
 
     getHeader() {
@@ -238,8 +239,6 @@ class Terminal {
 
         // Hovered file contents
         if (this.fs.isFile(this.lsIdx)) {
-            this.requestFile();
-
             const fileID = this.fs.getFileID(this.lsIdx);
             this.fileCache[fileID].render(
                 this.ctx,

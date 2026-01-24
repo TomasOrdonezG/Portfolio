@@ -76,12 +76,6 @@ class LoadFile extends File {
             await new Promise(r => setTimeout(r, delay));
         }
     }
-
-    async doneLoading() {
-        this.setText("[" + "=".repeat(this.steps) + "]");
-        this.loaded = true;
-        await new Promise(resolve => setTimeout(resolve, 100));
-    }
 };
 
 class JSONFile extends File {

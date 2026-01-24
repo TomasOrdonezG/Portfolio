@@ -65,6 +65,22 @@ class FileSystem {
         return cwd.files[fileIdx].id;
     }
 
+    getAllFiles() {
+        const files = [];
+
+        const preorder = (dir) => {
+            for (const file of dir.files) {
+                files.push(file);
+            }
+            for (const subdir of dir.subdirs) {
+                preorder(subdir);
+            }
+        };
+        preorder(this.dirStructure);
+
+        return files;
+    }
+
     getFileName(lsIdx) {
         if (!this.isFile(lsIdx)) {
             throw Error("Invalid file index.");
