@@ -80,7 +80,7 @@ class GlApp {
         this.uiCanvas.style.width = w + 'px';
         this.uiCanvas.style.height = h + 'px';
 
-        this.uiCtx.setTransform(this.DPR, 0, 0, this.DPR, 0, 0);
+        this.uiCtx.setTransform(1, 0, 0, 1, 0, 0);
         this.uiCtx.imageSmoothingEnabled = true;
 
         this.gl.viewport(0, 0, this.glCanvas.width, this.glCanvas.height);
