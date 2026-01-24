@@ -193,7 +193,7 @@ class Terminal {
 
     render() {
         const sepCol = this.leftSectionCols;
-        let row = 1;
+        let row = 0;
 
         // Background color
         this.drawRect(0, 0, this.cols + 1, this.rows + 1);
@@ -202,7 +202,7 @@ class Terminal {
         const header = this.getHeader();
         const headerLines = header.split("\n").length;
         this.write(header, row, 3);
-        row += headerLines + 1;
+        row += headerLines;
 
         // CWD path
         const pwd = this.fs.pwd() + (this.fileFocused ? this.fs.getFileName(this.lsIdx) : "");

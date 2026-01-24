@@ -5,10 +5,8 @@ from firebase_admin import credentials, initialize_app, firestore, storage
 STORAGE_DIR_NAME = "storage"
 
 CONTENT_PATH = os.path.join(os.path.curdir, "content")
-SHADERS_PATH = os.path.join(os.path.curdir, "shaders")
 STORAGE_PATH = os.path.join(os.path.curdir, STORAGE_DIR_NAME)
 
-SHADERS_COLLECTION = "shaders"
 FILES_COLLECTION = "files"
 DIR_STRUCTURE_COLLECTION = "dir-structure"
 DIR_STRUCTURE_DOCUMENT = "root"
@@ -22,17 +20,6 @@ initialize_app(cred, {
 
 db = firestore.client()
 bucket = storage.bucket()
-
-def write_shaders():
-    """
-    Write shader code to firestore database
-    """
-    for shader_filename in os.listdir(SHADERS_PATH):
-        shader_filepath = os.path.join(SHADERS_PATH, shader_filename)
-        with open(shader_filepath, "r") as shader_file:
-            shader_data = { "code": shader_file.read() }
-            doc_ref = db.collection(SHADERS_COLLECTION).document(shader_filename)
-            doc_ref.set(shader_data)
 
 def filepath_to_id(filepath):
     """
@@ -133,5 +120,4 @@ if __name__ == "__main__":
     dir_structure, filepaths = get_contents()
     write_dir_structure(dir_structure)
     write_files(filepaths)
-    write_shaders()
     update_storage()

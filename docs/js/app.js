@@ -1,24 +1,26 @@
 import GlApp from "./glApp.js";
 import Terminal from "./terminal.js";
 import repo from "./repository.js";
-
-const GRAIN_IMG_PATH = "images/grain.png";
+import strings from "./strings.js";
 
 class App extends GlApp {
-    constructor(vertexShaderCode, fragShaderCode, grainImgBlob, dirStructure, font) {
-        super(vertexShaderCode, fragShaderCode, grainImgBlob);
+    constructor(vertexShaderCode, fragShaderCode, dirStructure, font) {
+        super(vertexShaderCode, fragShaderCode);
         this.term = new Terminal(dirStructure, this.uiCtx, font);
         this.resize();
     }
 
     static async create() {
-        const vs = await repo.getShader("main.vert");
-        const fs = await repo.getShader("tv.frag");
+        const vs = strings.vertShader;
+        const fs = strings.fragShader;
+
         const dirStructure = await repo.getDirStructure();
-        const grainImgBlob = await repo.getFileBlob(GRAIN_IMG_PATH);
-        const font = "900 28px 'Doto'";
+
+        // const font = "900 28px 'Doto'";
+        const font = "28px 'JetBrains Mono'";
         await document.fonts.load(font);
-        return new App(vs, fs, grainImgBlob, dirStructure, font);
+
+        return new App(vs, fs, dirStructure, font);
     }
 
     onResize(canvasW, canvasH) {

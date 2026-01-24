@@ -1,5 +1,5 @@
 class GlApp {
-    constructor(vertexShaderCode, fragShaderCode, grainImgBlob) {
+    constructor(vertexShaderCode, fragShaderCode) {
         // DPR
         this.DPR = Math.max(1, window.devicePixelRatio || 1);
 
@@ -46,30 +46,8 @@ class GlApp {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-        // Grain texture
-        this.texGrain = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, this.texGrain);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        const tmpData = new Uint8Array([0, 0, 0, 255]);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, tmpData);
-
-
-
-        const grainImg = new Image();
-        grainImg.src = URL.createObjectURL(grainImgBlob);
-        grainImg.onload = () => {
-            gl.bindTexture(gl.TEXTURE_2D, this.texGrain);
-            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, grainImg);
-            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-        };
-
         // Shader uniforms
         this.uTex = gl.getUniformLocation(this.shaderProgram, 'uTex');
-        this.uTexGrain = gl.getUniformLocation(this.shaderProgram, 'uTexGrain');
         this.uRes = gl.getUniformLocation(this.shaderProgram, 'uRes');
         this.uTime = gl.getUniformLocation(this.shaderProgram, 'uTime');
 
@@ -139,10 +117,6 @@ class GlApp {
             this.gl.activeTexture(this.gl.TEXTURE0);
             this.gl.bindTexture(this.gl.TEXTURE_2D, this.uiTex);
             this.gl.uniform1i(this.uTex, 0);
-
-            this.gl.activeTexture(this.gl.TEXTURE1);
-            this.gl.bindTexture(this.gl.TEXTURE_2D, this.texGrain);
-            this.gl.uniform1i(this.uTexGrain, 1);
 
             this.gl.uniform1f(this.uTime, timeSec);
             this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
