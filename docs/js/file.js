@@ -100,6 +100,9 @@ class URLFile extends JSONFile {
 }
 
 class MarkdownFile extends File {
+
+    LINE_NO_WRAP_PREFIX = "@@@"
+
     constructor(name, text) {
         super(name, text);
         this.content = [];
@@ -187,12 +190,21 @@ class MarkdownFile extends File {
 
         // Split up lines
         const splitUpLines = [];
-        for (const line of this.lines) {
-            if (line.length <= cols) {
+        for (let line of this.lines) {
+            // Don't wrap lines starting with LINE_NO_WRAP_PREFIX
+            let skip_wrap = false;
+            if (line.startsWith(this.LINE_NO_WRAP_PREFIX)) {
+                line = line.substring(this.LINE_NO_WRAP_PREFIX.length);
+                skip_wrap = true;
+            }
+
+            // Push short lines
+            if (line.length <= cols || skip_wrap) {
                 splitUpLines.push(line);
                 continue;
             }
 
+            // Split long lines and indent bullet points
             const words = line.split(" ");
             const bullet = words.length > 0 && words[0] == "-";
             let subLine = "";
