@@ -4,14 +4,14 @@ Bachelor of Science with Specialization, Major in Computing Science
 @@@│ Course Title                                  │ Number    │ Grade │
 @@@├───────────────────────────────────────────────┼───────────┼───────┤
 @@@│ Formal Languages, Automata, and Computability │ CMPUT 474 │  A+   │
-@@@│ Machine Learning II                           │ CMPUT 467 │  IP   │
+@@@│ Machine Learning II                           │ CMPUT 467 │  A+   │
 @@@│ Natural Language Processing                   │ CMPUT 461 │  A-   │
 @@@│ Operating System Concepts                     │ CMPUT 379 │  A+   │
-@@@│ Search and Planning in AI                     │ CMPUT 366 │  IP   │
+@@@│ Search and Planning in AI                     │ CMPUT 366 │  A+   │
 @@@│ Reinforcement Learning                        │ CMPUT 365 │  A+   │
 @@@│ Advanced Games Programming                    │ CMPUT 350 │  A+   │
 @@@│ Numerical Methods                             │ CMPUT 340 │  A    │
-@@@│ Non-Procedural Programming Languages          │ CMPUT 325 │  IP   │
+@@@│ Non-Procedural Programming Languages          │ CMPUT 325 │  A+   │
 @@@│ Software Engineering                          │ CMPUT 301 │  A    │
 @@@│ File and Database Management                  │ CMPUT 291 │  A    │
 @@@│ Formal Systems and Logic in Computer Science  │ CMPUT 272 │  A+   │
@@ -20,7 +20,7 @@ Bachelor of Science with Specialization, Major in Computing Science
 @@@│ Algorithms I                                  │ CMPUT 204 │  A+   │
 @@@│ Practical Programming Methodology             │ CMPUT 201 │  A+   │
 @@@├───────────────────────────────────────────────┼───────────┼───────┤
-@@@│ Geometry of Convex Sets                       │ MATH  341 │  IP   │
+@@@│ Geometry of Convex Sets                       │ MATH  341 │  A+   │
 @@@│ Graph Theory                                  │ MATH  322 │  A+   │
 @@@│ Ring Theory                                   │ MATH  228 │  A    │
 @@@│ Linear Algebra II                             │ MATH  225 │  A+   │
