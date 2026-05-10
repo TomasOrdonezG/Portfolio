@@ -3,6 +3,8 @@
 @@@┗━┛╹ ╹╹ ╹┗━┛
 C++, GLSL, ECS, SFML, Git, GitHub
 
+University of Alberta Game Award Winner for Technical Excellence.
+
 [[skks/title.png]]
 
 - 2D physics based puzzle game built using a custom ECS game engine.
@@ -17,5 +19,4 @@ C++, GLSL, ECS, SFML, Git, GitHub
 [[skks/bugs.png]]
 [[skks/vaporize.png]]
 
-Check out my itch.io page for the full release of SKKS (contact/itchio.url)
-
+Check out my itch.io page for the full release of SKKS (`contact/itchio.url`)

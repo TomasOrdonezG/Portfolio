@@ -1,6 +1,7 @@
 import os, json
 from pathlib import Path
 from firebase_admin import credentials, initialize_app, firestore, storage
+from tqdm import tqdm
 
 STORAGE_DIR_NAME = "storage"
 
@@ -90,7 +91,7 @@ def write_files(filepaths):
     """
     Given a list of file paths, writes the contents of the files to the database.
     """
-    for filepath in filepaths:
+    for filepath in tqdm(filepaths, desc="Uploading Content "):
         file_id = filepath_to_id(filepath)
         doc_ref = db.collection(FILES_COLLECTION).document(file_id)
 
@@ -106,10 +107,10 @@ def update_storage():
     Uploads files to firebase storage
     """
 
-    for f in Path(STORAGE_PATH).rglob("*"):
-        if not f.is_file():
-            continue
- 
+    files = Path(STORAGE_PATH).rglob("*")
+    files = [f for f in files if f.is_file()]
+    
+    for f in tqdm(files, desc="Uploading Files   "):
         filepath = str(f)
         blobName = filepath.replace(STORAGE_DIR_NAME + "/", "")
     
@@ -118,6 +119,8 @@ def update_storage():
 
 if __name__ == "__main__":
     dir_structure, filepaths = get_contents()
+    print("Syncing...")
     write_dir_structure(dir_structure)
     write_files(filepaths)
     update_storage()
+    print("Done.")
