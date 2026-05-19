@@ -3,6 +3,10 @@ body {
     height: 100%;
     margin: 0;
     background: #000000;
+
+    /* Prevent safari window scrolling */
+    overscroll-behavior: none;
+    touch-action: none;
 }
 
 canvas {
