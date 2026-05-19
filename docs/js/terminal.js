@@ -44,7 +44,7 @@ class Terminal {
 
         document.addEventListener('touchstart', (e) => this.handleTouchStart(e), { passive: false });
         document.addEventListener('touchend', (e) => this.handleTouchEnd(e), { passive: false });
-        document.addEventListener('touchmove', (e) => this.handleTouchMove(e), { passive: false });
+        document.addEventListener('touchmove', (e) => { e.preventDefault() }, { passive: false });
     }
 
     onKeydown(keycode) {
