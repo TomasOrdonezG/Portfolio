@@ -41,8 +41,10 @@ class Terminal {
         this.touchThreshold = 40;
         this.lastTapTime = 0;
         this.tapDelay = 300;
-        document.addEventListener('touchstart', (e) => this.handleTouchStart(e), { passive: true });
-        document.addEventListener('touchend', (e) => this.handleTouchEnd(e), { passive: true });
+
+        document.addEventListener('touchstart', (e) => this.handleTouchStart(e), { passive: false });
+        document.addEventListener('touchend', (e) => this.handleTouchEnd(e), { passive: false });
+        document.addEventListener('touchmove', (e) => this.handleTouchMove(e), { passive: false });
     }
 
     onKeydown(keycode) {
@@ -150,16 +152,16 @@ class Terminal {
         if (absDiffX > absDiffY) {
             // Horizontal swipes
             if (diffX > 0) {
-                this.onKeydown("ArrowRight");
-            } else {
                 this.onKeydown("ArrowLeft");
+            } else {
+                this.onKeydown("ArrowRight");
             }
         } else {
             // Vertical swipes
             if (diffY > 0) {
-                this.onKeydown("ArrowDown");
-            } else {
                 this.onKeydown("ArrowUp");
+            } else {
+                this.onKeydown("ArrowDown");
             }
         }
     }

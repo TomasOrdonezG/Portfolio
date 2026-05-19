@@ -6,13 +6,19 @@
 @@@┏┓╻┏━┓╻ ╻╻┏━╸┏━┓╺┳╸╻┏━┓┏┓╻
 @@@┃┗┫┣━┫┃┏┛┃┃╺┓┣━┫ ┃ ┃┃ ┃┃┗┫
 @@@╹ ╹╹ ╹┗┛ ╹┗━┛╹ ╹ ╹ ╹┗━┛╹ ╹
-- UpArrow and DownArrow: Change highlighted file.
-- RightArrow: Step into the highlighted directory or view highlighted file.
-- LeftArrow: Step into the parent directory (unless in root directory already).
+- Up/Down: Change highlighted file.
+- Right: Step into the highlighted directory or view highlighted file.
+- Left: Step into the parent directory (unless in root directory already).
 - Enter: Run the highlighted file.
 
 @@@┏━╸╻╻  ┏━╸   ╻ ╻╻┏━╸╻ ╻╻┏┓╻┏━╸
 @@@┣╸ ┃┃  ┣╸    ┃┏┛┃┣╸ ┃╻┃┃┃┗┫┃╺┓
 @@@╹  ╹┗━╸┗━╸   ┗┛ ╹┗━╸┗┻┛╹╹ ╹┗━┛
-- UpArrow and DownArrow: Scroll.
-- LeftArrow: Return to file manager.
+- Up/Down: Scroll.
+- Left: Return to file manager.
+
+@@@┏┳┓┏━┓┏┓ ╻╻  ┏━╸
+@@@┃┃┃┃ ┃┣┻┓┃┃  ┣╸ 
+@@@╹ ╹┗━┛┗━┛╹┗━╸┗━╸
+- All direction controls are inverted.
+- Double tap is equivalent to enter.
