@@ -32,7 +32,17 @@ class Terminal {
         this.fileCache = {};
         this.loadFiles();
 
+        // Keydown events
         document.addEventListener("keydown", e => this.onKeydown(e.code));
+
+        // Mapping mobile controls to keys
+        this.touchStartX = 0;
+        this.touchStartY = 0;
+        this.touchThreshold = 40;
+        this.lastTapTime = 0;
+        this.tapDelay = 300;
+        document.addEventListener('touchstart', (e) => this.handleTouchStart(e), { passive: true });
+        document.addEventListener('touchend', (e) => this.handleTouchEnd(e), { passive: true });
     }
 
     onKeydown(keycode) {
@@ -101,6 +111,56 @@ class Terminal {
                 soundMgr.playSound(BEEP_SOUND_NAME);
                 f.run();
             });
+        }
+    }
+
+    handleTouchStart(e) {
+        this.touchStartX = e.changedTouches[0].screenX;
+        this.touchStartY = e.changedTouches[0].screenY;
+    }
+
+    handleTouchEnd(e) {
+        const endX = e.changedTouches[0].screenX;
+        const endY = e.changedTouches[0].screenY;
+
+        const diffX = endX - this.touchStartX;
+        const diffY = endY - this.touchStartY;
+        const absDiffX = Math.abs(diffX);
+        const absDiffY = Math.abs(diffY);
+
+        // Double taps map to enter
+        if (absDiffX < 10 && absDiffY < 10) {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - this.lastTapTime;
+
+            if (tapLength < this.tapDelay && tapLength > 0) {
+                this.onKeydown("Enter");
+                e.preventDefault();
+            }
+            this.lastTapTime = currentTime;
+            return;
+        }
+
+        // Check movement threshold
+        if (absDiffX < this.touchThreshold && absDiffY < this.touchThreshold) {
+            return;
+        }
+
+        // Determine swipe direction
+        if (absDiffX > absDiffY) {
+            // Horizontal swipes
+            if (diffX > 0) {
+                this.onKeydown("ArrowRight");
+            } else {
+                this.onKeydown("ArrowLeft");
+            }
+        } else {
+            // Vertical swipes
+            if (diffY > 0) {
+                this.onKeydown("ArrowDown");
+            } else {
+                this.onKeydown("ArrowUp");
+            }
         }
     }
 
