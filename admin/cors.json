@@ -3,13 +3,16 @@
         "origin": [
             "http://127.0.0.1:3000",
             "http://localhost:3000",
-            "https://tomasordonezg.github.io/Portfolio/"
+            "https://tomasordonezg.github.io/Portfolio/",
+            "https://tomasordonezg.com",
+            "https://www.tomasordonezg.com"
         ],
         "method": [
             "GET"
         ],
         "responseHeader": [
-            "Content-Type"
+            "Content-Type",
+            "Access-Control-Allow-Origin"
         ],
         "maxAgeSeconds": 3600
     }
